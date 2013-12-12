@@ -195,28 +195,88 @@ var xmldefuse = function (text) {
              .replace(/'/g, '&apos;');
 } 
 
-var buildElement = function (elementData) {
+var renderElement = function (element) {
   var output = ''
-  var e = elementData
-  for (var i = 0; i < elementData.numberOfSiblings; i++) {
+  
+  var e = element
+  
+  // check if it has sons in lower dataleves
+  var sonsDatalevel = []
+  var renderedSons = []
+  if (e.sonsRef && e.datalevel[e.sonsRef] && 
+          typeof e.datalevel[e.sonsRef] === 'object') {
 
-    // build the sons
-    var sons = []
-    if (e.sons) {
-      for (var j = 0; j < e.sons.length; j++) {
-        sons.push(buildElement(e.sons[j]))
+    if (Array.isArray(e.datalevel[e.sonsRef])) {
+      for (var h = 0; h < e.datalevel[e.sonsRef].length; h++) {
+        
+        // for each part of the array of data-sons
+        for (var l = 0; l < e.sons.length; l++) {
+          var son = e.sons[l]
+         
+          // multiply all the static sons with that lower datalevel
+          son.datalevel = e.datalevel[e.sonsRef][h]
+          renderedSons.push(renderElement(son))
+        }
+
+      }
+    }
+    else {
+      // in case of sub-objects, just change the scope and pass it to the
+      // previously defined static sons
+      var sonData = e.datalevel[e.sonsRef]
+ 
+      for (var l = 0; l < e.sons.length; l++) {
+        var son = e.sons[l]
+        // multiply all the static sons with that lower datalevel
+
+        son.datalevel = sonData
+        renderedSons.push(renderElement(son))
       }
     }
 
-    var elementString = e.open + ' ' + e.attrs[i].join(' ') + 
-                        e.close + e.content[i] + 
-                        sons.join(' ') + e.end
-    output += elementString
   }
+  // otherwise just render the sons with its same datalevel
+  else {
+    for (var l = 0; l < e.sons.length; l++) {
+      var son = e.sons[l]
+      son.datalevel = e.datalevel
+      renderedSons.push(renderElement(son))
+    }
+  }
+
+  // check for data-driven content
+  var content = e.content
+  if (e.contentRef) {
+    if (typeof e.datalevel[e.contentRef] === 'string' ||
+        typeof e.datalevel[e.contentRef] === 'number') {
+      content = e.datalevel[e.contentRef]
+    }
+  }
+
+  // check for data-driven attributes
+  if (e.dataAttrRef.dataKey && e.dataAttrRef.htmlAttr) {
+    if (typeof e.datalevel[e.dataAttrRef.dataKey] === 'string' ||
+        typeof e.datalevel[e.dataAttrRef.dataKey] === 'number') {
+      e.attrs[e.dataAttrRef.htmlAttr] = e.datalevel[e.dataAttrRef.dataKey]
+    }
+  }
+
+  // build the attrsString
+  var attrs = []
+  for (var key in e.attrs) {
+    attrs.push(key + '="' + e.attrs[key] + '"')
+  }
+  var attrsString = ' ' + attrs.join(' ')
+
+  // build the element
+  var elementString = e.open + attrsString + e.close + content + 
+                      renderedSons.join(' ') + e.end + '\n'
+  output += elementString
+
   return output
 }
 
-var template = '<div id="habitantes">\n  <div class="atuais">\n    <h1>Habitantes</h1>\n    <table>\n      <thead>\n        <tr>\n          <th></th>\n          <th></th>\n          <th></th>\n        </tr>\n      </thead>\n      <tbody class="ativos">\n        <tr>\n          <td class="quarto"></td>\n          <td>\n            <a class="nome" data-bind-here="href" data-bind-there="link"></a>\n          </td>\n        </tr>\n      </tbody>\n    </table>\n  </div>\n  <div class="antigos">\n    <h1>habitantes antigos</h1>\n    <table>\n      <thead>\n        <tr>\n          <th></th> \n          <th></th> \n        </tr> \n      </thead>\n      <tbody class="inativos">\n        <tr>\n          <td class="quarto"></td>\n          <td>\n            <a class="nome" data-bind-here="href" data-bind-there="link"></a>\n          </td>\n        </tr>\n      </tbody> \n    </table>\n  </div>\n</div>\n'
+var template = '<div id="habitantes">\n  <input/>\n  <div class="atuais">\n    <h1>Habitantes</h1>\n    <table>\n      <thead>\n        <tr>\n          <th></th>\n          <th></th>\n          <th></th>\n        </tr>\n      </thead>\n      <tbody class="ativos">\n        <tr>\n          <td class="quarto"></td>\n          <td>\n            <a class="nome" data-bind-here="href" data-bind-there="link"></a>\n          </td>\n        </tr>\n      </tbody>\n    </table>\n  </div>\n  <div class="antigos">\n    <h1>habitantes antigos</h1>\n    <table>\n      <thead>\n        <tr>\n          <th></th> \n          <th></th> \n        </tr> \n      </thead>\n      <tbody class="inativos">\n        <tr>\n          <td class="quarto"></td>\n          <td>\n            <a class="nome" data-bind-here="href" data-bind-there="link"></a>\n          </td>\n        </tr>\n      </tbody> \n    </table>\n  </div>\n</div>\n'
 var data = {
   ativos: [{
     quarto: '213',
@@ -241,159 +301,44 @@ htmlparser.parse(template, {
     var father = openedElements.slice(-1)[0] || {}
 
     var element = {
+      datalevel: father.datalevel || data, // the element's context (default: data)
       tag: tag,
-      numberOfSiblings: 1, // here we don't know yet
+      multiple: false, // if it is a member of a data-driven array (default: not)
       open: '<' + tag,
+      attrs: {},
+      dataAttrRef: {}, // if this has an attribute to be rendered based on data
+      content: '',
+      contentRef: null, // if this has content to be rendered based on data
+      end: '',
+      sons: []
     }
 
-
-    // default: 
-    // create 1 array or attrs
-    // ,      1 content string
-    // and    1 son's datalevel
-    element.attrs = [[]]
-    element.content = ['']
-
-    // create the correct number of attrs arrays
-    // and content strings
-    if (father.multipleSons) {
-      element.numberOfSiblings = father.multipleSons
-
-      element.attrs = []
-      element.content = []
-      for (var r = 0; r < element.numberOfSiblings; r++) {
-        element.attrs.push([])
-        element.content.push('')
-      }
-    }
-
-    // see what is the datalevel of the current element
-    if (father.datalevelOfMySons && father.datalevelOfMySons.length > 1) {
-
-      // in case this element is a created-by-data sibling of others,
-      // get its correspondent datalevel by ignoring the already taken
-      element.datalevels = []
-      element.datalevelOfMySons = []
-      for (var p = 0; p < father.datalevelOfMySons.length; p++) {
-
-        var dl = father.datalevelOfMySons[p]
-        if (!dl.taken) {
-          element.datalevels.push(dl.datalevel)
-          element.datalevelOfMySons.push({taken: false, datalevel: dl.datalevel})
-          father.datalevelOfMySons[p].taken = true
-        }
-
-      }
-      
-    }
-    else {
-      element.datalevel = father.datalevelOfMySons ? 
-                          father.datalevelOfMySons[0].datalevel : 
-                          data
-      element.datalevelOfMySons = [{ datalevel: element.datalevel }]
-    }
-
-    var insertAttr = {}
-
-    // scan all it tags and write them
+    // scan all its tags and write them
     for (var i = 0; i < attrs.length; i++) {
       var key = attrs[i].name
       var value = attrs[i].escaped
-      var arrayOfValues = attrs[i].escapeds
 
       if (key === 'data-bind-here') {
-        insertAttr.name = value
-
-        // finish inserting the attr
-        if (insertAttr.escaped || insertAttr.escapeds) {
-          // add the attr to this same list being iterated
-          attrs.push(insertAttr)
-        }
+        element.dataAttrRef.htmlAttr = value
       }
       if (key === 'data-bind-there') {
-
-        // get the value from the data
-        if (typeof element.datalevel[value] === 'string' ||
-            typeof element.datalevel[value] === 'number') {
-          datavalue = element.datalevel[value]
-          insertAttr.escaped = xmldefuse(datavalue)
-        }
-        else if (element.datalevels) {
-          insertAttr.escapeds = []
-          for (var w = 0; w < element.numberOfSiblings; w++) {
-            var siblingData = element.datalevels[w]
-            if (typeof siblingData[value] === 'string' ||
-                typeof siblingData[value] === 'number') {
-              datavalue = siblingData[value]
-              insertAttr.escapeds.push(xmldefuse(datavalue))
-            }
-          }
-        }
-
-        // finish inserting the attr
-        if (insertAttr.name && insertAttr.escaped) {
-          // add the attr to this same list being iterated
-          attrs.push(insertAttr)
-        }
-
+        element.dataAttrRef.dataKey = value
       }
       if (key === 'class') {
-        // if we are looking to an array of data, 
-        // look through it
-        if (element.datalevels) {
-
-          element.content = []
-
-          for (var w = 0; w < element.numberOfSiblings; w++) {
-            
-            var siblingData = element.datalevels[w]
-            if (typeof siblingData[value] === 'string' ||
-                typeof siblingData[value] === 'number') {
-
-              element.content.push(siblingData[value])
-
-            }
-            
-          }
-        }
-        // otherwise behave as 'id'
-        key = 'id'
-
+        element.contentRef = value
+        element.sonsRef = value
       }
       if (key === 'id') {
-
-        // check for this key in the data.
-        // if it is a string, insert it in the body of this element
-        if (element.datalevel &&
-            typeof element.datalevel[value] === 'string' ||
-            element.datalevel &&
-            typeof element.datalevel[value] === 'number') {
-          element.content = [element.datalevel[value]] // only works with 1 sibling
-        }
-
-        // if it is an object, change the scope of the data to a lower level
-        else if (element.datalevel &&
-                 typeof element.datalevel[value] === 'object') {
-          var lowerlevel = element.datalevel[value]
-          element.datalevelOfMySons = []
-          for (var m = 0; m < lowerlevel.length; m++) {
-            element.datalevelOfMySons.push({taken: false, datalevel: lowerlevel[m]})
-          }
-          element.multipleSons = lowerlevel.length
-        }
-
+        element.contentRef = value
+        element.sonsRef = value
       }
 
-      // insert this attr in the element(s)
+      // insert this attr in the element
       for (var c = 0; c < element.numberOfSiblings; c++) {
-        if (arrayOfValues) {
-          var value = arrayOfValues[c]
-        }
-        element.attrs[c].push(key + '="' + value + '"')
+        element.attrs[key] = value
       }
 
     }
-    insertAttr = {}
 
     if (unary) {
       // this does not constitute a standalone element, but rather
@@ -403,7 +348,7 @@ htmlparser.parse(template, {
       element.close = '/>'
 
       // add this to the father
-      openedElements.slice(-1).sons.push(element)
+      openedElements.slice(-1)[0].sons.push(element)
 
     }
     else {
@@ -421,13 +366,7 @@ htmlparser.parse(template, {
     if (!element || element.end){
       return
     }
-    
-    // if the current element hasn't data to use 
-    // as content, add the default template content instead
-    for (var g = 0; g < element.numberOfSiblings; g++) {
-      element.content.push(text)
-    }
-
+    element.content = text
   },
   end: function (tag) {
     var element = openedElements.slice(-1)[0]
@@ -449,13 +388,14 @@ htmlparser.parse(template, {
 
     // if it was the last, build it
     if (!openedElements.length) {
-      htmlresult = buildElement(elem)
+      htmlresult = renderElement(elem)
     }
 
   },
 })
 
-document.getElementById('main').innerHTML = htmlresult
+if (typeof document === 'undefined') console.log(htmlresult)
+else document.getElementById('main').innerHTML = htmlresult
 
 
 
