@@ -1,8 +1,4 @@
 
-// sven@pimpmybyte.de 
-// sven@svenvanbolt.de 
-// fischentgraeter@web.de
-// github: mk-pmb
 
 var transplates = {
   render: function (html, data, opts) {
