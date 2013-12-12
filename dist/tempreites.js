@@ -19,12 +19,12 @@
        */
     
       // Regular Expressions for parsing tags and attributes
-      var startTag = /^<([-A-Za-z0-9_]+)((?:\s+[\w-]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/,
+      var startTag = /^<([!-A-Za-z0-9_]+)((?:\s+[\w-]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/,
         endTag = /^<\/([-A-Za-z0-9_]+)[^>]*>/,
         attr = /([-A-Za-z0-9_]+)(?:\s*=\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+)))?/g;
         
       // Empty Elements - HTML 4.01
-      var empty = makeMap("area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
+      var empty = makeMap("!doctype,area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
     
       // Block Elements - HTML 4.01
       var block = makeMap("address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul");
@@ -338,14 +338,29 @@
             }
         
             if (unary) {
-              // this does not constitute a standalone element, but rather
-              // a content of other element
+
+              if (element.tag === '!doctype') {
+                // special case
+                element.close = '>'
+              }
+
+              else {
+                // this does not constitute a standalone element, but rather
+                // a content of other element
         
-              // close the tag
-              element.close = '/>'
+                // close the tag
+                element.close = '/>'
+              }
         
               // add this to the father
-              openedElements.slice(-1)[0].sons.push(element)
+              if (openedElements.slice(-1)[0]) {
+                openedElements.slice(-1)[0].sons.push(element)
+              }
+              
+              // if it doesn't have a father, write it
+              else {
+                htmlresult += renderElement(element)
+              }
         
             }
             else {
@@ -385,7 +400,7 @@
         
             // if it was the last, build it
             if (!openedElements.length) {
-              htmlresult = renderElement(elem)
+              htmlresult += renderElement(elem)
             }
         
           },
