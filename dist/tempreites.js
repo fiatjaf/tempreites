@@ -30,12 +30,12 @@
        */
     
       // Regular Expressions for parsing tags and attributes
-      var startTag = /^<([!-A-Za-z0-9_]+)((?:\s+[\w-]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/,
+      var startTag = /^<([!-A-Za-z0-9_]+)((?:\s+[\w-]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/i,
         endTag = /^<\/([-A-Za-z0-9_]+)[^>]*>/,
         attr = /([-A-Za-z0-9_]+)(?:\s*=\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+)))?/g;
         
       // Empty Elements - HTML 4.01
-      var empty = makeMap("!doctype,area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
+      var empty = makeMap("!doctype,!DOCTYPE,area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
     
       // Block Elements - HTML 4.01
       var block = makeMap("address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul");
@@ -130,8 +130,6 @@
         parseEndTag();
     
         function parseStartTag( tag, tagName, rest, unary ) {
-          tagName = tagName.toLowerCase();
-    
           if ( block[ tagName ] ) {
             while ( stack.last() && inline[ stack.last() ] ) {
               parseEndTag( "", stack.last() );
@@ -301,6 +299,8 @@
     return {
   
       render: function (template, data) {
+        template = template.toLowerCase()
+
         var openedElements = []    
         var htmlresult = ''
   
@@ -348,7 +348,7 @@
         
             if (unary) {
 
-              if (element.tag === '!doctype') {
+              if (element.tag === '!doctype' || element.tag === '!DOCTYPE') {
                 // special case
                 element.close = '>'
               }
