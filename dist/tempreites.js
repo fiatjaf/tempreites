@@ -287,11 +287,17 @@
         attrs.push(key + '="' + e.attrs[key] + '"')
       }
       var attrsString = ' ' + attrs.join(' ')
-    
-      // build the element
-      var elementString = e.open + attrsString + e.close + content + 
-                          renderedSons.join(' ') + e.end + '\n'
-      output += elementString
+
+      // if the element had a data-show-if attr and check if it has
+      // to be rendered or not before rendering
+      if (!e.dataShowRef || e.dataShowRef && e.datalevel[e.dataShowRef]) {
+
+        // build the element
+        var elementString = e.open + attrsString + e.close + content + 
+                            renderedSons.join(' ') + e.end + '\n'
+        output += elementString
+
+      }
     
       return output
     }
@@ -315,6 +321,7 @@
               open: '<' + tag,
               attrs: {},
               dataAttrRef: {}, // if this has an attribute to be rendered based on data
+              dataShowRef: null, // search this key and only render the element if it exists
               content: '',
               contentRef: null, // if this has content to be rendered based on data
               end: '',
@@ -331,6 +338,9 @@
               }
               if (key === 'data-bind-there') {
                 element.dataAttrRef.dataKey = value
+              }
+              if (key === 'data-show-if') {
+                element.dataShowRef = value
               }
               if (key === 'class') {
                 element.contentRef = value
