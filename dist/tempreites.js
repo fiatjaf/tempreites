@@ -1,15 +1,26 @@
+/*!
+ * Tempreites
+ *
+ * Copyright © 2013 Giovanni Torres Parra | BSD & MIT license | http://github.com/fiatjaf/tempreites
+ */
+
 (function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define(['exports'], factory);
-    } else if (typeof exports === 'object') {
-        // CommonJS
-        factory(exports);
-    } else {
-        // Browser globals
-        factory((root.tempreites = {}));
-    }
-}(this, function (exports) {
+  'use strict';
+
+  if (typeof exports === 'object') {
+    // CommonJS module
+    module.exports = factory();
+  } 
+  else if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(function () {
+      return factory();
+    });
+  } 
+  else {
+    root.Tempreites = factory();
+  }
+}(this, function () {
     var htmlparser = function () {
       /*
        * HTML Parser By John Resig (ejohn.org) @ http://ejohn.org/files/htmlparser.js
@@ -287,7 +298,7 @@
       return output
     }
   
-    var tempreites = {
+    return {
   
       render: function (template, data) {
         var openedElements = []    
@@ -331,9 +342,7 @@
               }
         
               // insert this attr in the element
-              for (var c = 0; c < element.numberOfSiblings; c++) {
-                element.attrs[key] = value
-              }
+              element.attrs[key] = value
         
             }
         
@@ -415,8 +424,5 @@
       //  return element
       //}
     }
-
-    exports.render = tempreites.render
-    //exports.update = tempreites.update
 
 }));
