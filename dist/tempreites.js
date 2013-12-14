@@ -207,12 +207,15 @@
     }
     /*  -*-  */
     
-    var xmldefuse = function (text) { 
-      return text.replace(/&/g, '&amp;')
-                 .replace(/</g, '&lt;')
-                 .replace(/>/g, '&gt;')
-                 .replace(/"/g, '&quot;')
-                 .replace(/'/g, '&apos;');
+    var XMLdefuse = function (text) { 
+      if (text.replace) {
+        return text.replace(/&/g, '&amp;')
+                   .replace(/</g, '&lt;')
+                   .replace(/>/g, '&gt;')
+                   .replace(/"/g, '&quot;')
+                   .replace(/'/g, '&apos;');
+      }
+      return text
     } 
     
     var renderElement = function (element) {
@@ -277,7 +280,7 @@
       if (e.dataAttrRef.dataKey && e.dataAttrRef.htmlAttr) {
         if (typeof e.datalevel[e.dataAttrRef.dataKey] === 'string' ||
             typeof e.datalevel[e.dataAttrRef.dataKey] === 'number') {
-          e.attrs[e.dataAttrRef.htmlAttr] = e.datalevel[e.dataAttrRef.dataKey]
+          e.attrs[e.dataAttrRef.htmlAttr] = XMLdefuse(e.datalevel[e.dataAttrRef.dataKey])
         }
       }
     
@@ -293,7 +296,7 @@
       if (!e.dataShowRef || e.dataShowRef && e.datalevel[e.dataShowRef]) {
 
         // build the element
-        var elementString = e.open + attrsString + e.close + content + 
+        var elementString = e.open + attrsString + e.close + content +
                             renderedSons.join(' ') + e.end + '\n'
         output += elementString
 
@@ -307,7 +310,7 @@
       render: function (template, data) {
         template = template.toLowerCase()
 
-        var openedElements = []    
+        var openedElements = []
         var htmlresult = ''
   
         htmlparser.parse(template, {
