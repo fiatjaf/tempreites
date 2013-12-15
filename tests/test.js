@@ -32,3 +32,11 @@
   if (typeof document === 'undefined') console.log(res) 
   else document.getElementById('main').innerHTML = res 
 
+
+  var template = '<!DOCTYPE html>\n<html>\n  <head>\n      <title>hotel</title>\n      <link href="//cdnjs.cloudflare.com/ajax/libs/pure/0.3.0/pure-min.css" rel="stylesheet" type="text/css" media="not print">\n      <link href="../../default.css" rel="stylesheet" type="text/css" media="not print" />\n      <link href=\'../../modules//pikaday.css\' rel=\'stylesheet\' type=\'text/css\' media="not print">\n      <link href=\'../../lib//jsmodal-light.css\' rel=\'stylesheet\' type=\'text/css\' media="not print">\n      <link rel="stylesheet" href="../../boletos.css" type="text/css" media="print"> \n      <script src="../../lib//jsmodal-1.0d.js"></script>\n  </head>\n  <body>\n  </body>\n</html>\n'
+  var doc = {}
+
+  var res = Tempreites.render(template, doc)
+
+  if (typeof document === 'undefined') console.log(res) 
+  else document.getElementById('main').innerHTML = res 
