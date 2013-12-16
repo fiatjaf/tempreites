@@ -1,8 +1,9 @@
+### [DEMO](http://jsfiddle.net/fiatjaf/mSEZ6/)
+### [Comparison with Mustache](http://jsperf.com/tempreites-vs-mustache)
+
 # Tempreites
 
 Crude string templating without any syntax, just semantic HTML.
-
-### [DEMO](http://jsfiddle.net/fiatjaf/mSEZ6/)
 
 ## Usage
 
@@ -85,10 +86,10 @@ get this back:
 
 ## Features
 
-* _Semantic data binding_ - No need for <%=foo%> or {{foo}} assignments
-* _Collection rendering_ - No need for hand-written loops
-* _Valid HTML templates_ - Write templates as a part of the HTML, in plain HTML
-* _View logic in JavaScript_ - No crippled micro-template language, just plain JavaScript functions
+* __Semantic data binding__ - No need for <%=foo%> or {{foo}} assignments
+* __Collection rendering__ - No need for hand-written loops
+* __Valid HTML templates__ - Write templates as a part of the HTML, in plain HTML
+* __View logic in JavaScript__ - No crippled micro-template language, just plain JavaScript functions
 
 ## Installation
 
@@ -96,7 +97,74 @@ get this back:
 npm install tempreites
 ```
 
-Or download the universally loadable [file](https://raw.github.com/fiatjaf/tempreites/master/dist/tempreites.js).
+Or download the [file](https://raw.github.com/fiatjaf/tempreites/master/dist/tempreites.js) and include it anywhere.
+
+---
+
+### Documentation
+
+Considering a `data` object like this:
+```javascript
+var data = {
+  name: 'Miyamoto',
+  link: '/miyamoto',
+  completeName: {
+    first: 'Shigeru'
+    last: 'Miyamoto'
+  },
+  sons: [{ name: 'Mario', show: true }, { name: 'Luigi', show: false }]
+  show: true
+}
+Tempreites.render(template, data)
+```
+
+#### Binding values
+
+Use a `class` or an `id` at the target element with the value of the key in your `data` object.
+```html
+<h1 class="name"></h1>
+```
+
+#### Nested objects
+
+Use a `class` or an `id` at some element with the value of the parent key in your `data` object, then use a `class` or `id` with the child key anywhere inside the parent element.
+```html
+<div id="name">
+  <h1>
+    <span class="last"></span>, <span class="first"></span></h1>
+  </h1>
+</div>
+```
+
+#### Nested lists
+
+Use a `class` or an `id` at the element immediattely before the element you want to be repeated with the list values, then use a `class` or `id` with the child key anywhere inside it.
+```html
+<div id="sons">
+  <p class="name"></p>
+</div>
+```
+
+#### Binding values to attributes
+
+Use the `data-bind-here` and a `data-bind-there` attributes. The second names a key at the `data` object from where to get the string value that will be filled at the attr named by the first.
+```html
+<h1 id="name">
+  <span class="last"></span>, <a data-bind-here="href" data-bind-there="link" class="first"></a>
+</h1>
+```
+
+#### Conditional showing of elements
+
+Use the `data-show-if` attr naming a key at the `data` object which will be tested for deciding if the element
+will be shown or not.
+```html
+<div id="miyamoto" data-show-if="show">
+  <ul class="sons">
+    <li class="name" data-show-if="show"></li>
+  </ul>
+</div>
+```
 
 ---
 
