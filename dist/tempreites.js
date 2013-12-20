@@ -318,11 +318,7 @@
     
     var XMLdefuse = function (text) { 
       if (text.replace) {
-        return text.replace(/&/g, '&amp;')
-                   .replace(/</g, '&lt;')
-                   .replace(/>/g, '&gt;')
-                   .replace(/"/g, '&quot;')
-                   .replace(/'/g, '&apos;');
+        return text.replace(/(<|>|"|'|&)/g, '');
       }
       return text
     } 
