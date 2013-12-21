@@ -166,6 +166,15 @@ will be shown or not.
 </div>
 ```
 
+#### Pre-compiling templates
+
+Call the `compile` function to get a pre-compiled template to which you can just pass the data later.
+```javascript
+var tpr = Tempreites.compile('<div class="u"></div>')
+tpr.render({u: 'a'})
+tpr.render({u: 'b'})
+```
+
 ---
 
 Inspired by [Plates](https://github.com/flatiron/plates) and [Transparency](https://github.com/leonidas/transparency/), but simplified and more useful.
