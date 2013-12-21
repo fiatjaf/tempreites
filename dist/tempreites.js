@@ -323,9 +323,9 @@
       return text
     } 
     
-    var renderElement = function (element) {
+    var renderElement = function (e, data) {
       var output = ''
-      var e = element
+      e.datalevel = e.datalevel || data || {}
       
       // check if it has sons in lower dataleves
       var renderedSons = []
@@ -421,8 +421,12 @@
     return {
   
       render: function (template, data) {
+        var compiled = this.compile(template)
+        return compiled.render(data)
+      },
+      compile: function (template) {
         var openedElements = []
-        var htmlresult = ''
+        var finalElements = []
   
         parse(template, {
 
@@ -432,7 +436,6 @@
             var attrs = {}
             attrs[value] = null
             var element = {
-              datalevel: data,
               tag: '',
               open: '<!doctype',
               close: '>',
@@ -441,15 +444,13 @@
               attrs: attrs,
               content: ''
             }
-            htmlresult += renderElement(element)
+            finalElements.push(element)
 
           },
           openElement: function (tag) {
             // default element creation 
 
-            var father = openedElements.slice(-1)[0]
             var element = {
-              datalevel: father ? father.datalevel : data, // the element's context (default: data)
               tag: tag,
               open: '<' + tag,
               attrs: {},
@@ -507,13 +508,14 @@
               }
               // if it doesn't have a father, write it
               else {
-                htmlresult += renderElement(element)
+                finalElements.push(element)
               }
+
               // remove it from the opened list
               var elem = openedElements.pop()
               // if it was the last, build it
               if (!openedElements.length) {
-                htmlresult += renderElement(elem)
+                finalElements.push(elem)
               }
             }
 
@@ -522,7 +524,6 @@
             // a text is an element without tags
             var father = openedElements.slice(-1)[0]
             var element = {
-              datalevel: father ? father.datalevel : data, // the element's context (default: data)
               tag: '',
               open: ' ',
               close: ' ',
@@ -538,7 +539,7 @@
             }
             // if it doesn't have a father, write it
             else {
-              htmlresult += renderElement(element)
+              finalElements.push(element)
             }
 
           },
@@ -572,20 +573,25 @@
         
             // if it was the last, build it
             if (!openedElements.length) {
-              htmlresult += renderElement(elem)
+              finalElements.push(elem)
             }
         
           },
         })
       
-        return htmlresult
+        var compiled = {
+          elements: finalElements,
+          render: function (data) {
+            var htmlresult = ''
+            for (var i = 0; i < this.elements.length; i++) {
+              htmlresult += renderElement(this.elements[i], data)
+            }
+            return htmlresult
+          }
+        }
+
+        return compiled
       },
-      //update: function (element, data) {
-  
-      //  var rendered = this.render(element.outerHTML, data)
-      //  element.outerHTML = rendered
-      //  return element
-      //}
     }
 
 }));
