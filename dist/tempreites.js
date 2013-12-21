@@ -323,25 +323,23 @@
       return text
     } 
     
-    var renderElement = function (element) {
+    var renderElement = function (e, datalevel) {
       var output = ''
-      var e = element
       
       // check if it has sons in lower dataleves
       var renderedSons = []
-      if (e.sonsRef && e.datalevel[e.sonsRef] && 
-              typeof e.datalevel[e.sonsRef] === 'object') {
+      if (e.sonsRef && datalevel[e.sonsRef] && 
+              typeof datalevel[e.sonsRef] === 'object') {
     
-        if (Array.isArray(e.datalevel[e.sonsRef])) {
-          for (var h = 0; h < e.datalevel[e.sonsRef].length; h++) {
+        if (Array.isArray(datalevel[e.sonsRef])) {
+          for (var h = 0; h < datalevel[e.sonsRef].length; h++) {
             
             // for each part of the array of data-sons
             for (var l = 0; l < e.sons.length; l++) {
               var son = e.sons[l]
              
               // multiply all the static sons with that lower datalevel
-              son.datalevel = e.datalevel[e.sonsRef][h]
-              renderedSons.push(renderElement(son))
+              renderedSons.push(renderElement(son, datalevel[e.sonsRef][h]))
             }
     
           }
@@ -349,14 +347,13 @@
         else {
           // in case of sub-objects, just change the scope and pass it to the
           // previously defined static sons
-          var sonData = e.datalevel[e.sonsRef]
+          var sonData = datalevel[e.sonsRef]
      
           for (var l = 0; l < e.sons.length; l++) {
             var son = e.sons[l]
             // multiply all the static sons with that lower datalevel
     
-            son.datalevel = sonData
-            renderedSons.push(renderElement(son))
+            renderedSons.push(renderElement(son, sonData))
           }
         }
     
@@ -365,25 +362,24 @@
       else {
         for (var l = 0; l < e.sons.length; l++) {
           var son = e.sons[l]
-          son.datalevel = e.datalevel
-          renderedSons.push(renderElement(son))
+          renderedSons.push(renderElement(son, datalevel))
         }
       }
     
       // check for data-driven content
       var content = e.content
       if (e.contentRef) {
-        if (typeof e.datalevel[e.contentRef] === 'string' ||
-            typeof e.datalevel[e.contentRef] === 'number') {
-          content = e.datalevel[e.contentRef]
+        if (typeof datalevel[e.contentRef] === 'string' ||
+            typeof datalevel[e.contentRef] === 'number') {
+          content = datalevel[e.contentRef]
         }
       }
     
       // check for data-driven attributes
       if (e.dataAttrRef && e.dataAttrRef.dataKey && e.dataAttrRef.htmlAttr) {
-        if (typeof e.datalevel[e.dataAttrRef.dataKey] === 'string' ||
-            typeof e.datalevel[e.dataAttrRef.dataKey] === 'number') {
-          e.attrs[e.dataAttrRef.htmlAttr] = XMLdefuse(e.datalevel[e.dataAttrRef.dataKey])
+        if (typeof datalevel[e.dataAttrRef.dataKey] === 'string' ||
+            typeof datalevel[e.dataAttrRef.dataKey] === 'number') {
+          e.attrs[e.dataAttrRef.htmlAttr] = XMLdefuse(datalevel[e.dataAttrRef.dataKey])
         }
       }
     
@@ -406,7 +402,7 @@
 
       // if the element had a data-show-if attr and check if it has
       // to be rendered or not before rendering
-      if (!e.dataShowRef || e.dataShowRef && e.datalevel[e.dataShowRef]) {
+      if (!e.dataShowRef || e.dataShowRef && datalevel[e.dataShowRef]) {
 
         // build the element
         var elementString = e.open + attrsString + e.close + content +
@@ -421,8 +417,12 @@
     return {
   
       render: function (template, data) {
+        var compiled = this.compile(template)
+        return compiled.render(data)
+      },
+      compile: function (template) {
         var openedElements = []
-        var htmlresult = ''
+        var finalElements = []
   
         parse(template, {
 
@@ -432,7 +432,6 @@
             var attrs = {}
             attrs[value] = null
             var element = {
-              datalevel: data,
               tag: '',
               open: '<!doctype',
               close: '>',
@@ -441,15 +440,13 @@
               attrs: attrs,
               content: ''
             }
-            htmlresult += renderElement(element)
+            finalElements.push(element)
 
           },
           openElement: function (tag) {
             // default element creation 
 
-            var father = openedElements.slice(-1)[0]
             var element = {
-              datalevel: father ? father.datalevel : data, // the element's context (default: data)
               tag: tag,
               open: '<' + tag,
               attrs: {},
@@ -507,13 +504,14 @@
               }
               // if it doesn't have a father, write it
               else {
-                htmlresult += renderElement(element)
+                finalElements.push(element)
               }
+
               // remove it from the opened list
               var elem = openedElements.pop()
               // if it was the last, build it
               if (!openedElements.length) {
-                htmlresult += renderElement(elem)
+                finalElements.push(elem)
               }
             }
 
@@ -522,7 +520,6 @@
             // a text is an element without tags
             var father = openedElements.slice(-1)[0]
             var element = {
-              datalevel: father ? father.datalevel : data, // the element's context (default: data)
               tag: '',
               open: ' ',
               close: ' ',
@@ -538,7 +535,7 @@
             }
             // if it doesn't have a father, write it
             else {
-              htmlresult += renderElement(element)
+              finalElements.push(element)
             }
 
           },
@@ -572,20 +569,25 @@
         
             // if it was the last, build it
             if (!openedElements.length) {
-              htmlresult += renderElement(elem)
+              finalElements.push(elem)
             }
         
           },
         })
       
-        return htmlresult
+        var compiled = {
+          elements: finalElements,
+          render: function (data) {
+            var htmlresult = ''
+            for (var i = 0; i < this.elements.length; i++) {
+              htmlresult += renderElement(this.elements[i], data)
+            }
+            return htmlresult
+          }
+        }
+
+        return compiled
       },
-      //update: function (element, data) {
-  
-      //  var rendered = this.render(element.outerHTML, data)
-      //  element.outerHTML = rendered
-      //  return element
-      //}
     }
 
 }));
