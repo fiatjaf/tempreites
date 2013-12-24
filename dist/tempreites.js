@@ -584,6 +584,7 @@
         var compiled = {
           elements: finalElements,
           render: function (data) {
+            data = data || {}
             var htmlresult = ''
             for (var i = 0; i < this.elements.length; i++) {
               htmlresult += renderElement(this.elements[i], data)
