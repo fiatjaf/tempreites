@@ -101,7 +101,7 @@ Or download the [file](https://raw.github.com/fiatjaf/tempreites/master/dist/tem
 
 ---
 
-### Documentation
+## Documentation
 
 Considering a `data` object like this:
 ```javascript

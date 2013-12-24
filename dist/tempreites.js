@@ -315,6 +315,14 @@
       };
     }
     /*  -*-  */
+
+    /* Crockford clone function */
+    function clone(o) {
+      function F() {}
+      F.prototype = o;
+      return new F();
+    }
+    /*  -*-  */
     
     var XMLdefuse = function (text) { 
       if (text.replace) {
@@ -376,24 +384,23 @@
       }
     
       // check for data-driven attributes
+      var attrsDict = clone(e.attrs)
       if (e.dataAttrRef && e.dataAttrRef.dataKey && e.dataAttrRef.htmlAttr) {
         if (typeof datalevel[e.dataAttrRef.dataKey] === 'string' ||
             typeof datalevel[e.dataAttrRef.dataKey] === 'number') {
-          e.attrs[e.dataAttrRef.htmlAttr] = XMLdefuse(datalevel[e.dataAttrRef.dataKey])
+          attrsDict[e.dataAttrRef.htmlAttr] = XMLdefuse(datalevel[e.dataAttrRef.dataKey])
         }
       }
     
       // build the attrsString
       var attrs = []
-      for (var key in e.attrs) {
-        
-        if (e.attrs[key]) {
-          attrs.push(key + '="' + e.attrs[key] + '"')
+      for (var key in attrsDict) {
+        if (attrsDict[key]) {
+          attrs.push(key + '="' + attrsDict[key] + '"')
         }
         else {
           attrs.push(key)
         }
-
       }
       var attrsString = attrs.join(' ')
       if (attrsString) {
@@ -408,7 +415,6 @@
         var elementString = e.open + attrsString + e.close + content +
                             renderedSons.join(' ') + e.end + '\n'
         output += elementString
-
       }
     
       return output
