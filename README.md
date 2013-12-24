@@ -1,5 +1,5 @@
 ### [DEMO](http://jsfiddle.net/fiatjaf/mSEZ6/)
-### [Comparison with Mustache](http://jsperf.com/tempreites-vs-mustache)
+### [Comparison with Mustache](http://jsperf.com/tempreites-vs-mustache/3)
 
 # Tempreites
 
@@ -90,6 +90,14 @@ get this back:
 * __Collection rendering__ - No need for hand-written loops
 * __Valid HTML templates__ - Write templates as a part of the HTML, in plain HTML
 * __View logic in JavaScript__ - No crippled micro-template language, just plain JavaScript functions
+
+## TODOs:
+
+* _Write basic tests_ - Yes.
+* _Basic optmization_
+* _Use `data-bind-` to bind data to element, not just ids and classes_
+* _Read some `data-` attr to see in which element arrays of data will duplicate_
+* _Add some way to let more than one element attr bind to data_
 
 ## Installation
 

@@ -1,6 +1,6 @@
 {
   "name": "tempreites",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Semantic string templates direto da roça for the browser and server.",
   "keywords": [
     "templates",
