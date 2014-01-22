@@ -1,6 +1,6 @@
 {
   "name": "tempreites",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Semantic string templates direto da roça for the browser and server.",
   "keywords": [
     "templates",
@@ -23,8 +23,13 @@
     }
   ],
   "scripts": {
-    "test": "xdg-open tests/test.html"
+    "test": "xdg-open tests/test.html",
+    "build": "grunt"
   },
-  "main": "./dist/tempreites.js"
+  "main": "./dist/tempreites.js",
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-uglify": "~0.2.2"
+  }
 }
 
