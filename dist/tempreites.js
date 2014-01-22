@@ -336,32 +336,37 @@
       
       // check if it has sons in lower dataleves
       var renderedSons = []
-      if (e.sonsRef && datalevel[e.sonsRef] && 
-              typeof datalevel[e.sonsRef] === 'object') {
+      if (e.sonsRefs.length) {
+        for (var i = 0; i < e.sonsRefs.length; i++) {
+          if (datalevel[e.sonsRefs[i]] && typeof datalevel[e.sonsRefs[i]] === 'object') {
     
-        if (Array.isArray(datalevel[e.sonsRef])) {
-          for (var h = 0; h < datalevel[e.sonsRef].length; h++) {
-            
-            // for each part of the array of data-sons
-            for (var l = 0; l < e.sons.length; l++) {
-              var son = e.sons[l]
-             
-              // multiply all the static sons with that lower datalevel
-              renderedSons.push(renderElement(son, datalevel[e.sonsRef][h]))
+            if (Array.isArray(datalevel[e.sonsRefs[i]])) {
+              for (var h = 0; h < datalevel[e.sonsRefs[i]].length; h++) {
+                
+                // for each part of the array of data-sons
+                for (var l = 0; l < e.sons.length; l++) {
+                  var son = e.sons[l]
+                 
+                  // multiply all the static sons with that lower datalevel
+                  renderedSons.push(renderElement(son, datalevel[e.sonsRefs[i]][h]))
+                }
+    
+              }
             }
-    
-          }
-        }
-        else {
-          // in case of sub-objects, just change the scope and pass it to the
-          // previously defined static sons
-          var sonData = datalevel[e.sonsRef]
+            else {
+              // in case of sub-objects, just change the scope and pass it to the
+              // previously defined static sons
+              var sonData = datalevel[e.sonsRefs[i]]
      
-          for (var l = 0; l < e.sons.length; l++) {
-            var son = e.sons[l]
-            // multiply all the static sons with that lower datalevel
+              for (var l = 0; l < e.sons.length; l++) {
+                var son = e.sons[l]
+                // multiply all the static sons with that lower datalevel
     
-            renderedSons.push(renderElement(son, sonData))
+                renderedSons.push(renderElement(son, sonData))
+              }
+            }
+
+            break
           }
         }
     
@@ -376,10 +381,11 @@
     
       // check for data-driven content
       var content = e.content
-      if (e.contentRef) {
-        if (typeof datalevel[e.contentRef] === 'string' ||
-            typeof datalevel[e.contentRef] === 'number') {
-          content = datalevel[e.contentRef]
+      for (var i = 0; i < e.contentRefs.length; i++) {
+        if (typeof datalevel[e.contentRefs[i]] === 'string' ||
+            typeof datalevel[e.contentRefs[i]] === 'number') {
+          content = datalevel[e.contentRefs[i]]
+          break
         }
       }
     
@@ -444,7 +450,9 @@
               sons: [],
               end: ' ',
               attrs: attrs,
-              content: ''
+              content: '',
+              sonsRefs: [],
+              contentRefs: []
             }
             finalElements.push(element)
 
@@ -459,7 +467,8 @@
               dataAttrRef: {}, // if this has an attribute to be rendered based on data
               dataShowRef: null, // search this key and only render the element if it exists
               content: '',
-              contentRef: null, // if this has content to be rendered based on data
+              contentRefs: [], // if this has content to be rendered based on data
+              sonsRefs: [],
               end: '',
               sons: []
             }
@@ -481,12 +490,17 @@
               element.dataShowRef = value
             }
             if (key === 'class') {
-              element.contentRef = value
-              element.sonsRef = value
+              var parts = value.split()
+              for (var i = 0; i < parts.length; i++) {
+                if (parts[i]) {
+                  element.contentRefs.push(parts[i])
+                  element.sonsRefs.push(parts[i])
+                }
+              }
             }
             if (key === 'id') {
-              element.contentRef = value
-              element.sonsRef = value
+              element.contentRefs.unshift(value)
+              element.sonsRefs.unshift(value)
             }
         
             // insert this attr in the element
@@ -532,7 +546,9 @@
               sons: [],
               end: ' ',
               attrs: {},
-              content: text
+              content: text,
+              sonsRefs: [],
+              contentRefs: []
             }
 
             // add it to the father
