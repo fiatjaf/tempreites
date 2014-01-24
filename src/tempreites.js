@@ -400,6 +400,13 @@
           attrsDict[e.dataAttrRef.htmlAttr] = XMLdefuse(datalevel[e.dataAttrRef.dataKey])
         }
       }
+      for (var dataKey in e.attrRefs) {
+        if (typeof datalevel[dataKey] === 'string' ||
+            typeof datalevel[dataKey] === 'number') {
+          var targetAttr = e.attrRefs[dataKey]
+          attrsDict[targetAttr] = datalevel[dataKey]
+        }
+      }
     
       // build the attrsString
       var attrs = []
@@ -453,6 +460,7 @@
               sons: [],
               end: ' ',
               attrs: attrs,
+              attrRefs: {},
               content: '',
               sonsRefs: [],
               contentRefs: []
@@ -469,6 +477,7 @@
               attrs: {},
               dataAttrRef: {}, // if this has an attribute to be rendered based on data
               dataShowRef: null, // search this key and only render the element if it exists
+              attrRefs: {},
               content: '',
               contentRefs: [], // if this has content to be rendered based on data
               sonsRefs: [],
@@ -483,6 +492,13 @@
           attribute: function (key, value) {
             var element = openedElements.slice(-1)[0]
         
+            if (key === 'data-bind') {
+              var parts = value.split('|');
+              for (var p = 0; p < parts.length; p++) {
+                var bparts = parts[p].split('->');
+                element.attrRefs[bparts[0].trim()] = bparts[1].trim();
+              }
+            }
             if (key === 'data-bind-here') {
               element.dataAttrRef.htmlAttr = value
             }
@@ -549,6 +565,7 @@
               sons: [],
               end: ' ',
               attrs: {},
+              attrRefs: {},
               content: text,
               sonsRefs: [],
               contentRefs: []
