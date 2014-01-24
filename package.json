@@ -1,6 +1,6 @@
 {
   "name": "tempreites",
-  "version": "0.1.3",
+  "version": "0.1.7",
   "description": "Semantic string templates direto da roça for the browser and server.",
   "keywords": [
     "templates",
@@ -16,12 +16,10 @@
       "type": "MIT"
     }
   ],
-  "repositories": [
-    {
-      "type": "git",
-      "url": "git://github.com/fiatjaf/tempreites.git"
-    }
-  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/fiatjaf/tempreites.git"
+  },
   "scripts": {
     "test": "python -m SimpleHTTPServer && xdg-open http://localhost:8000/tests",
     "build": "grunt"

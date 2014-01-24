@@ -1,5 +1,5 @@
 ### [DEMO](http://jsfiddle.net/fiatjaf/mSEZ6/)
-### [Comparison with Mustache](http://jsperf.com/tempreites-vs-mustache/3)
+### [Comparison with Mustache](http://jsperf.com/tempreites-vs-mustache/4)
 
 # Tempreites
 
@@ -93,11 +93,8 @@ get this back:
 
 ## TODOs:
 
-* _Write basic tests_ - Yes.
 * _Basic optmization_
-* _Use `data-bind-` to bind data to element, not just ids and classes_
 * _Read some `data-` attr to see in which element arrays of data will duplicate_
-* _Add some way to let more than one element attr bind to data_
 
 ## Installation
 
@@ -155,11 +152,12 @@ Use a `class` or an `id` at the element immediattely before the element you want
 
 #### Binding values to attributes
 
-Use the `data-bind-here` and a `data-bind-there` attributes. The second names a key at the `data` object from where to get the string value that will be filled at the attr named by the first.
+Use the `data-bind` attribute with the special syntax "javascriptObjectAttrName - > htmlElementAttrNameToBindTo". If you want to bind to more than one attr, write the other bindings at the same `data-bind`, separated by a `|`:
 ```html
-<h1 id="name">
-  <span class="last"></span>, <a data-bind-here="href" data-bind-there="link" class="first"></a>
-</h1>
+<header>
+  <h1 id="name"></h1>
+  <img data-bind="url -> src | name -> alt">
+</header>
 ```
 
 #### Conditional showing of elements
