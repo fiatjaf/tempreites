@@ -23,7 +23,7 @@
     }
   ],
   "scripts": {
-    "test": "xdg-open tests/test.html",
+    "test": "python -m SimpleHTTPServer && xdg-open http://localhost:8000/tests",
     "build": "grunt"
   },
   "main": "./dist/tempreites.js",
