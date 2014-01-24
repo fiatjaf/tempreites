@@ -382,7 +382,10 @@
       // check for data-driven content
       var content = e.content
       for (var i = 0; i < e.contentRefs.length; i++) {
-        if (typeof datalevel[e.contentRefs[i]] === 'string' ||
+        if (e.contentRefs[i] === '_this') {
+          content = datalevel
+        }
+        else if (typeof datalevel[e.contentRefs[i]] === 'string' ||
             typeof datalevel[e.contentRefs[i]] === 'number') {
           content = datalevel[e.contentRefs[i]]
           break
