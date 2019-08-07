@@ -5,9 +5,11 @@
 
 Crude string templating without any syntax, just semantic HTML.
 
+**Disclaimer**: This is old, slow, buggy and not recommended. It's here just for historical reasons. It was my first public library and published on http://microjs.com/.
+
 ## Usage
 
-Get this as a string, 
+Get this as a string,
 
 ```html
 <div id="austrianeconomics">
@@ -16,7 +18,7 @@ Get this as a string,
     <li>
       <span class="author"></span>
       <span>
-        <a class="theory" 
+        <a class="theory"
            data-bind-here="href"
            data-bind-there="url">
         </a>
@@ -50,7 +52,7 @@ get this back:
     <li>
       <span class="author">Menger</span>
       <span>
-        <a class="theory" 
+        <a class="theory"
            data-bind-here="href"
            data-bind-there="url"
            href="/subj">
@@ -61,7 +63,7 @@ get this back:
     <li>
       <span class="author">Hayek</span>
       <span>
-        <a class="theory" 
+        <a class="theory"
            data-bind-here="href"
            data-bind-there="url"
            href="/abct">
@@ -72,7 +74,7 @@ get this back:
     <li>
       <span class="author">Kirzner</span>
       <span>
-        <a class="theory" 
+        <a class="theory"
            data-bind-here="href"
            data-bind-there="url"
            href="/entre">
